@@ -6,8 +6,15 @@
 
 // typedef unsigned char byte;
 
+#ifdef __amigaos__
+// A 68040 draws the 3D view at the game's own 320x200 (RESOLUTION 640x480
+// on the command line, or ScreenWidth in the config, for the larger one).
+int iGLOBAL_SCREENWIDTH = 320;
+int iGLOBAL_SCREENHEIGHT = 200;
+#else
 int iGLOBAL_SCREENWIDTH = 640;	// bna
 int iGLOBAL_SCREENHEIGHT = 480; // bna
+#endif
 int iGLOBAL_SCREENBWIDE;
 int iG_SCREENWIDTH; // default screen width in bytes
 

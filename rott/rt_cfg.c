@@ -75,7 +75,11 @@ int FXvolume = 196;
 boolean mouseenabled = 1;
 boolean usemouselook = 0;
 int inverse_mouse = 1; // set  to -1 to invert mouse
+#ifdef __amigaos__
+boolean sdl_fullscreen = 0; // a window on the Workbench; FULLSCREEN for a screen
+#else
 boolean sdl_fullscreen = 1;
+#endif
 
 boolean joystickenabled = 0;
 boolean joypadenabled = 0;
