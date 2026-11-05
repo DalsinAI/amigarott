@@ -1,0 +1,40 @@
+Rise of the Triad (Taradino) for AmigaOS 3.x: licences
+=======================================================
+
+The game: Rise of the Triad (1994-1995) by Apogee Software, Ltd.; the
+source release and the SDL ports by Steven Fuller, Ryan C. Gordon, John
+Hall, Dan Olson and others; Taradino by Fabian Greffrath, erysdren and
+others, https://github.com/fabiangreffrath/taradino.
+
+- The program (rott/) is under the GNU General Public License, version 2
+  or (at your option) any later version (COPYING.txt), as upstream's
+  README.md and each file's notice say.
+- rott/vgatext.c and rott/vgatext.h (the end text screen): MIT licence,
+  (c) 2024 erysdren.
+- rott/vgafont.h: public domain (Joseph Gil).
+- The icon art (misc/taradino.png, used for the Workbench icons) comes
+  with the GPL source.
+- The Amiga port's own files (amiga/) are GPL 2 or later, like the program.
+  Copyright (c) 2026 AmiCradle Team.
+
+The game data is NOT included.
+
+- "The HUNT Begins" (the shareware episode, HUNTBGIN.WAD, .RTL, .RTC,
+  REMOTE1.RTS) is Apogee's. Its VENDOR.DOC lets anyone pass the shareware
+  around free of charge, but only as the whole, unmodified DOS package (all
+  its files, ROTT.EXE and the rest) "on IBM compatible media"; an Amiga
+  drawer holding only the data files is not that. So the port does not ship
+  it: get the shareware archive (1rott13.zip, ROTTSW13.SHR inside it, which
+  is a ZIP archive) and copy its data files into the drawer.
+- The registered game (DARKWAR.WAD and the rest) is sold by Apogee
+  (3D Realms), GOG and Steam; bring your own copy.
+
+Taradino's own notice (README.md, "Legalese"):
+
+  Files: *
+  Copyright: (c) 1993-1994, James R. Dose; (c) 1993-1996, Id Software,
+  Inc.; (c) 1993-2008, Raven Software; (c) 1994-1995, Apogee Software,
+  Ltd.; (c) 2002-2015, Steven Fuller, Ryan C. Gordon, John Hall, Dan Olson;
+  (c) 2005-2018, Simon Howard; (c) 2006-2025, Fabian Greffrath;
+  (c) 2023-2025, erysdren
+  License: GPL-2.0+

@@ -1,0 +1,14 @@
+{
+  "name": "Rise of the Triad",
+  "version": "2025.12.22-amigaos3",
+  "drawer": "Rott",
+  "program": "Rott-Shareware",
+  "cpu": "68040",
+  "fpu": true,
+  "space": 4000000,
+  "modules": ["SDL2.module", "SDL2_mixer.module"],
+  "keep": ["huntbgin", "darkwar"],
+  "parent": "Work:Games",
+  "badge": "icons/art/rott.png",
+  "script": "Install-Rott"
+}

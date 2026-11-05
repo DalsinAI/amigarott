@@ -12,8 +12,10 @@
 # for "The HUNT Begins" (HUNTBGIN.WAD). Both read the data from PROGDIR:.
 #
 # Output: build/amigaos/Rott and build/amigaos/Rott-Shareware; 'dist' makes
-# dist/Rott/ (both programs, ReadMe, the licences, with GlowIcons) and
-# dist/Rott.info. No game data is in it: the player adds their own.
+# dist/Rott/ (both programs, ReadMe, the licences, with GlowIcons),
+# dist/Rott.info and dist/Install-Rott (the Installer script, made from
+# amiga/installer.json by amicradle's scripts/port_installer.py). No game
+# data is in it: the player adds their own.
 
 STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
 PREFIX  ?= $(STOVE)/prefix
@@ -72,11 +74,10 @@ dist: all AMIGA_PORT.md COPYING README.md amiga/Licences.txt
 	cp COPYING $(OUT)/COPYING.txt
 	cp amiga/Licences.txt $(OUT)/Licences.txt
 	cp doc/cheats.txt $(OUT)/Cheats.txt
-	if [ -f amiga/icons/Rott.info ]; then \
-	  cp amiga/icons/Rott.info amiga/icons/Rott-Shareware.info amiga/icons/ReadMe.info $(OUT)/ ; \
-	  for f in ReadMe-taradino COPYING.txt Licences.txt Cheats.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done ; \
-	  cp amiga/icons/Rott-drawer.info $(DIST)/Rott.info ; \
-	fi
+	cp amiga/icons/Rott.info amiga/icons/Rott-Shareware.info amiga/icons/ReadMe.info $(OUT)/
+	for f in ReadMe-taradino COPYING.txt Licences.txt Cheats.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done
+	cp amiga/icons/Rott-drawer.info $(DIST)/Rott.info
+	cp amiga/Install-Rott amiga/Install-Rott.info $(DIST)/
 
 clean:
 	rm -rf $(BUILD)
