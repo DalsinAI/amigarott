@@ -218,7 +218,11 @@ int FX_StopSound(int handle)
 
 // Calculate slice size, the result must be a power of two.
 
+#ifdef __amigaos__
+static int snd_samplerate = 22050; // the 68040's mixing; the effects are 11 kHz
+#else
 static int snd_samplerate = 44100;
+#endif
 
 static int GetSliceSize(void)
 {
