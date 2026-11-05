@@ -148,10 +148,27 @@ SDL_Window *VL_GetVideoWindow(void);
 char *ROTTMAPS, *ORIG_ROTTMAPS;
 char *BATTMAPS;
 
+#ifdef __amigaos__
+#include "../amiga/amiga_port.h"
+
+// Every way out ends in exit(): SDL is shut down here, then the empty
+// screens OpenGPU's SDL2.module leaves behind are closed.
+static void amiga_atexit(void)
+{
+	SDL_Quit();
+	amiga_screens_close_leftovers();
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	_argc = argc;
 	_argv = argv;
+
+#ifdef __amigaos__
+	amiga_screens_snapshot();
+	atexit(amiga_atexit);
+#endif
 
 	ApogeePath = GetPrefDir();
 
