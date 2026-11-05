@@ -1,0 +1,87 @@
+# Rise of the Triad (Taradino) for AmigaOS 3.x, 68040/68060 + FPU, on
+# OpenGPU's SDL 2 (with SDL2_mixer).
+#
+#   make -f amiga/Makefile.amigaos -j4 dist \
+#        STOVE=/path/to/os32-gcc16-open6
+#
+# STOVE is a GFOpenAmigaGCC 16.2.0-open6 stove: the compiler in
+# $(STOVE)/prefix/bin and the GFOpenGPU SDK 0.8 (libSDL2.a, libSDL2_mixer.a
+# and their headers) in $(STOVE)/prefix/m68k-amigaos, the NDK in
+# $(STOVE)/ndk. Two programs are built, as the game is one or the other at
+# build time: Rott for the registered data (DARKWAR.WAD) and Rott-Shareware
+# for "The HUNT Begins" (HUNTBGIN.WAD). Both read the data from PROGDIR:.
+#
+# Output: build/amigaos/Rott and build/amigaos/Rott-Shareware; 'dist' makes
+# dist/Rott/ (both programs, ReadMe, the licences, with GlowIcons) and
+# dist/Rott.info. No game data is in it: the player adds their own.
+
+STOVE   ?= $(HOME)/AmiCradle/stoves/os32-gcc16-open6
+PREFIX  ?= $(STOVE)/prefix
+NDK     ?= $(STOVE)/ndk/Include_H
+SDL2KIT ?= $(PREFIX)/m68k-amigaos
+CC      = $(PREFIX)/bin/m68k-amigaos-gcc
+CPU     ?= -m68040 -m68881
+# -fno-tree-loop-distribute-patterns: GCC 16's loop miscompile (the kit's
+# sdl2-config gives it too).
+OPT     ?= -O2 -fomit-frame-pointer -fno-tree-loop-distribute-patterns
+
+VERSION = 2025.12.22
+DEFS    = -D__amigaos__ -DHAVE_DIRENT_H -DPACKAGE_TARNAME=\"taradino\"
+INC     = -I$(GEN) -Irott -I$(SDL2KIT)/include/SDL2
+CFLAGS  = -noixemul $(OPT) $(CPU) -std=gnu99 -fcommon $(DEFS) $(INC) -Wall -Wno-unused
+LDFLAGS = -noixemul $(CPU)
+LIBS    = -L$(SDL2KIT)/lib -lSDL2_mixer -lSDL2 -lm
+
+BUILD   = build/amigaos
+GEN     = $(BUILD)/gen
+DIST    = dist
+OUT     = $(DIST)/Rott
+
+# Upstream's CMake list (rott/*.c); adlmusic.c is empty without libADLMIDI.
+SRC     = $(sort $(wildcard rott/*.c)) amiga/amiga_screens.c \
+          amiga/amiga_message.c amiga/stack.c
+OBJS_R  = $(SRC:%.c=$(BUILD)/reg/%.o)
+OBJS_S  = $(SRC:%.c=$(BUILD)/sw/%.o)
+HDRS    = $(wildcard rott/*.h amiga/*.h) $(GEN)/version.h
+
+all: $(BUILD)/Rott $(BUILD)/Rott-Shareware
+
+$(GEN)/version.h: rott/version.h.in
+	@mkdir -p $(GEN)
+	sed 's/@CMAKE_PROJECT_VERSION@/$(VERSION)/' $< > $@
+
+$(BUILD)/Rott: $(OBJS_R)
+	$(CC) $(LDFLAGS) -Wl,-Map,$@.map -o $@ $(OBJS_R) $(LIBS)
+
+$(BUILD)/Rott-Shareware: $(OBJS_S)
+	$(CC) $(LDFLAGS) -Wl,-Map,$@.map -o $@ $(OBJS_S) $(LIBS)
+
+$(BUILD)/reg/%.o: %.c $(HDRS)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DPACKAGE_STRING="\"Rise of the Triad $(VERSION)\"" -c -o $@ $<
+
+$(BUILD)/sw/%.o: %.c $(HDRS)
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DSHAREWARE=1 -DPACKAGE_STRING="\"Rise of the Triad (Shareware) $(VERSION)\"" -c -o $@ $<
+
+dist: all AMIGA_PORT.md COPYING README.md amiga/Licences.txt
+	rm -rf $(OUT) && mkdir -p $(OUT)
+	cp $(BUILD)/Rott $(BUILD)/Rott-Shareware $(OUT)/
+	cp AMIGA_PORT.md $(OUT)/ReadMe
+	cp README.md $(OUT)/ReadMe-taradino
+	cp COPYING $(OUT)/COPYING.txt
+	cp amiga/Licences.txt $(OUT)/Licences.txt
+	cp doc/cheats.txt $(OUT)/Cheats.txt
+	if [ -f amiga/icons/Rott.info ]; then \
+	  cp amiga/icons/Rott.info amiga/icons/Rott-Shareware.info amiga/icons/ReadMe.info $(OUT)/ ; \
+	  for f in ReadMe-taradino COPYING.txt Licences.txt Cheats.txt; do cp amiga/icons/ReadMe.info $(OUT)/$$f.info; done ; \
+	  cp amiga/icons/Rott-drawer.info $(DIST)/Rott.info ; \
+	fi
+
+clean:
+	rm -rf $(BUILD)
+
+distclean: clean
+	rm -rf $(DIST)
+
+.PHONY: all dist clean distclean
