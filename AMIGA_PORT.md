@@ -42,8 +42,10 @@ then double-click Rott-Shareware (or Rott), or from a Shell:
 - NOWAIT skips the intro and goes to the menu; FULLSCREEN opens a 640x480
   screen of its own rather than a window on the Workbench; RESOLUTION
   640x480 draws the game at 640x480 (twice the work for the 68040; the
-  default is the game's own 320x200 shown in a 640x480 window). Taradino's
-  other options are in ReadMe-taradino and Cheats.txt.
+  default is the game's own 320x200 shown in a 640x480 window). The game
+  keeps FULLSCREEN and RESOLUTION in its settings: WINDOW goes back to the
+  window, RESOLUTION 320x200 to the small picture. Taradino's other options
+  are in ReadMe-taradino and Cheats.txt.
 - Keys, as on the PC: cursor keys walk and turn, Ctrl fires, Alt strafes,
   Shift runs, Space opens doors and presses switches, Enter selects in the
   menus. Options > Controls changes them; the mouse works when the window
