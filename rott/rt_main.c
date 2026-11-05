@@ -1510,6 +1510,10 @@ void ShutDown(void)
 
 void QuitGame(void)
 {
+#ifdef __amigaos__
+	MU_StopSong(); // as CP_Quit() does here: after
+	// Mix_FadeOutMusic() the program hangs in exit() (SDL2_mixer.module)
+#else
 	MU_FadeOut(200);
 	while (MU_FadeActive())
 	{
@@ -1518,6 +1522,7 @@ void QuitGame(void)
 		{
 		}
 	}
+#endif
 
 #if (SHAREWARE == 1)
 	Uint16 *endscreen = W_CacheLumpName("SHAREEND", PU_CACHE, CvtNull, 1);
@@ -1525,7 +1530,14 @@ void QuitGame(void)
 	Uint16 *endscreen = W_CacheLumpName("REGEND", PU_CACHE, CvtNull, 1);
 #endif
 
+#ifndef __amigaos__
 	vgatext_main(VL_GetVideoWindow(), endscreen);
+#else
+	// The DOS end text screen stays black through OpenGPU's SDL 2 (a
+	// second streaming texture on the window's renderer) and waits for a
+	// key the player cannot see to press: left out.
+	(void)endscreen;
+#endif
 
 	PrintMapStats();
 	PrintTileStats();

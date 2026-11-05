@@ -2368,7 +2368,7 @@ void CP_Quit(int which)
 	{
 		int handle;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__amigaos__)
 		MU_StopSong();
 #else
 		MU_FadeOut(310);

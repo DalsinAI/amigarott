@@ -32,6 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "z_zone.h"
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __amigaos__
+#include "SDL.h"
+#include "rt_in.h"
+#endif
 
 #include "develop.h"
 #include "isr.h"
@@ -602,12 +606,29 @@ void SD_WaitSound(int handle)
 
 	IN_ClearKeysDown();
 
+#ifdef __amigaos__
+	// At most four seconds, with the events read so that a key does break
+	// in: where the sound never ends (no audio device taking the samples)
+	// the loop never did, and quitting hung here.
+	int until = GetTicCount() + 4 * VBLCOUNTER;
+#endif
+
 	while (FX_SoundActive(handle) != 0)
 	{
 		time = GetTicCount() + 1;
 		while (time > GetTicCount())
 		{
+#ifdef __amigaos__
+			SDL_Delay(2);
+#endif
 		}
+#ifdef __amigaos__
+		IN_PumpEvents();
+		if (GetTicCount() > until)
+		{
+			break;
+		}
+#endif
 		if ((LastScan) || IN_GetMouseButtons())
 		{
 			break;
