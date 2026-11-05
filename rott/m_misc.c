@@ -551,6 +551,21 @@ char *M_DirName(const char *path)
 	pf = strrchr(path, '/');
 #ifdef _WIN32
 	pb = strrchr(path, '\\');
+#elif defined(__amigaos__)
+	// AmigaDOS: "VOL:name" lives in "VOL:" (kept, colon and all), "name"
+	// in the current directory ("").
+	pb = strrchr(path, ':');
+	if (pb != NULL && (pf == NULL || pb > pf))
+	{
+		result = M_StringDuplicate(path);
+		result[pb - path + 1] = '\0';
+		return result;
+	}
+	pb = NULL;
+	if (pf == NULL)
+	{
+		return M_StringDuplicate("");
+	}
 #else
 	pb = NULL;
 #endif
@@ -577,6 +592,8 @@ const char *M_BaseName(const char *path)
 	pf = strrchr(path, '/');
 #ifdef _WIN32
 	pb = strrchr(path, '\\');
+#elif defined(__amigaos__)
+	pb = strrchr(path, ':'); // "VOL:name"
 #else
 	pb = NULL;
 #endif
@@ -844,6 +861,21 @@ char *M_StringJoin(const char *s, ...)
 		{
 			break;
 		}
+
+#ifdef __amigaos__
+		// AmigaDOS: "PROGDIR:" "/" "x" would be PROGDIR:'s parent, and
+		// "dir/" "/" "x" dir's parent; "" "/" "x" the current
+		// directory's. A separator after nothing, a volume or a separator
+		// is left out.
+		if (v[0] == PATH_SEP_CHAR && v[1] == '\0')
+		{
+			size_t n = strlen(result);
+			if (n == 0 || result[n - 1] == ':' || result[n - 1] == PATH_SEP_CHAR)
+			{
+				continue;
+			}
+		}
+#endif
 
 		M_StringConcat(result, v, result_len);
 	}

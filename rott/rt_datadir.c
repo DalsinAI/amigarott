@@ -22,7 +22,7 @@
 #include "m_misc.h"
 #include "rt_util.h"
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__amigaos__)
 #include <pwd.h>
 #endif
 
@@ -128,6 +128,12 @@ static char *GetExeDir(void)
 {
 	static char *dir;
 
+#ifdef __amigaos__
+	// The program's own drawer.
+	if (dir == NULL)
+		dir = M_StringDuplicate("PROGDIR:");
+#endif
+
 	if (dir == NULL)
 	{
 		char *result;
@@ -156,7 +162,7 @@ char *GetPrefDir(void)
 	{
 		char *result;
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__amigaos__)
 		result = SDL_GetPrefPath("", PACKAGE_TARNAME);
 		if (result != NULL)
 		{
@@ -173,7 +179,14 @@ char *GetPrefDir(void)
 		M_MakeDirectory(dir);
 
 		result = dir;
+#ifdef __amigaos__
+		// No trailing "/": AmigaDOS's CreateDir() takes the name alone.
 #if !(SHAREWARE == 1)
+		dir = M_StringJoin(result, "darkwar", NULL);
+#else
+		dir = M_StringJoin(result, "huntbgin", NULL);
+#endif
+#elif !(SHAREWARE == 1)
 		dir = M_StringJoin(result, "darkwar", PATH_SEP_STR, NULL);
 #else
 		dir = M_StringJoin(result, "huntbgin", PATH_SEP_STR, NULL);
@@ -207,7 +220,7 @@ static void AddDataDir(char *dir)
 	}
 }
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__amigaos__)
 static void AddDataPath(const char *path, const char *suffix)
 {
 	char *left, *p, *dup_path;
@@ -270,6 +283,7 @@ static void AddXdgDirs(void)
 }
 #endif
 
+#ifndef __amigaos__
 static void AddStorefrontDirs(void)
 {
 	struct stat st;
@@ -333,6 +347,7 @@ static void AddStorefrontDirs(void)
 			AddDataDir(M_StringDuplicate(path));
 	}
 }
+#endif
 
 static void BuildDataDirList(void)
 {
@@ -340,6 +355,16 @@ static void BuildDataDirList(void)
 	{
 		return;
 	}
+
+#ifdef __amigaos__
+	// The program's drawer, then the current directory ("" + name).
+	AddDataDir(GetExeDir());
+	AddDataDir("");
+#ifdef DATADIR
+	AddDataDir(DATADIR);
+#endif
+	return;
+#endif
 
 	// current directory
 	AddDataDir(".");
@@ -352,11 +377,13 @@ static void BuildDataDirList(void)
 	AddDataDir(DATADIR);
 #endif
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__amigaos__)
 	AddXdgDirs();
 #endif
 
+#ifndef __amigaos__
 	AddStorefrontDirs();
+#endif
 }
 
 char *FindFileByName(const char *name)

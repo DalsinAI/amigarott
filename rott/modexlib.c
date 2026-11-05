@@ -84,6 +84,16 @@ void SetShowCursor(int show)
 	SDL_GetRelativeMouseState(NULL, NULL);
 }
 
+#ifdef __amigaos__
+// OpenGPU's SDL 2 reports a 24-bit window; the picture goes through one
+// 32-bit XRGB streaming texture, which its renderer takes as it is.
+#define ROTT_TEXTUREFORMAT(w) SDL_PIXELFORMAT_RGB888
+#define ROTT_FULLSCREEN SDL_WINDOW_FULLSCREEN
+#else
+#define ROTT_TEXTUREFORMAT(w) SDL_GetWindowPixelFormat(w)
+#define ROTT_FULLSCREEN SDL_WINDOW_FULLSCREEN_DESKTOP
+#endif
+
 static union {
 	int (*BlitScaled)(SDL_Surface *src, const SDL_Rect *srcrect,
 					  SDL_Surface *dst, SDL_Rect *dstrect);
@@ -93,7 +103,17 @@ static union {
 
 void GraphicsMode(void)
 {
+#ifdef __amigaos__
+	// A window of the game's 4:3 picture, 320x200 shown at 640x480; a
+	// full screen is a screen of that size (OpenGPU's SDL 2 has no
+	// desktop-sized full screen to scale into).
+	uint32_t flags = 0;
+	int win_w = iGLOBAL_SCREENWIDTH <= 320 ? 640 : iGLOBAL_SCREENWIDTH;
+	int win_h = iGLOBAL_SCREENWIDTH <= 320 ? 480 : iGLOBAL_SCREENHEIGHT;
+#else
 	uint32_t flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+	int win_w = iGLOBAL_SCREENWIDTH, win_h = iGLOBAL_SCREENHEIGHT;
+#endif
 
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
 	{
@@ -102,12 +122,12 @@ void GraphicsMode(void)
 
 	if (sdl_fullscreen)
 	{
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		flags |= ROTT_FULLSCREEN;
 	}
 
 	screen =
 		SDL_CreateWindow(NULL, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-						 iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, flags);
+						 win_w, win_h, flags);
 	SDL_SetWindowMinimumSize(screen, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
 	SDL_SetWindowTitle(screen, PACKAGE_STRING);
 
@@ -129,9 +149,9 @@ void GraphicsMode(void)
 
 	argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(
 		NULL, iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT, 0, 0,
-		SDL_GetWindowPixelFormat(screen));
+		ROTT_TEXTUREFORMAT(screen));
 
-	texture = SDL_CreateTexture(renderer, SDL_GetWindowPixelFormat(screen),
+	texture = SDL_CreateTexture(renderer, ROTT_TEXTUREFORMAT(screen),
 								SDL_TEXTUREACCESS_STREAMING,
 								iGLOBAL_SCREENWIDTH, iGLOBAL_SCREENHEIGHT);
 
@@ -156,7 +176,7 @@ void ToggleFullScreen(void)
 
 	if (sdl_fullscreen)
 	{
-		flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+		flags |= ROTT_FULLSCREEN;
 	}
 
 	SDL_SetWindowFullscreen(screen, flags);

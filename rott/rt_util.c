@@ -51,6 +51,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "modexlib.h"
 #include "rt_cfg.h"
 #include "rt_datadir.h"
+#ifdef __amigaos__
+#include "../amiga/amiga_port.h"
+#endif
 
 int egacolor[16];
 byte *origpal;
@@ -367,10 +370,18 @@ void Error(char *error, ...)
 		fprintf(stderr, "Area         = %ld\n", (long)level);
 	}
 
+#ifdef __amigaos__
+	// An Intuition requester, seen when started from the Workbench too;
+	// before ShutDown(), which ends in exit(0).
+	amiga_message(PACKAGE_STRING, msgbuf);
+#endif
+
 	ShutDown();
 
+#ifndef __amigaos__
 	SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, PACKAGE_STRING, msgbuf,
 							 NULL);
+#endif
 	SDL_Quit();
 
 	exit(1);

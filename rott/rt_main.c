@@ -148,10 +148,27 @@ SDL_Window *VL_GetVideoWindow(void);
 char *ROTTMAPS, *ORIG_ROTTMAPS;
 char *BATTMAPS;
 
+#ifdef __amigaos__
+#include "../amiga/amiga_port.h"
+
+// Every way out ends in exit(): SDL is shut down here, then the empty
+// screens OpenGPU's SDL2.module leaves behind are closed.
+static void amiga_atexit(void)
+{
+	SDL_Quit();
+	amiga_screens_close_leftovers();
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	_argc = argc;
 	_argv = argv;
+
+#ifdef __amigaos__
+	amiga_screens_snapshot();
+	atexit(amiga_atexit);
+#endif
 
 	ApogeePath = GetPrefDir();
 
@@ -1493,6 +1510,10 @@ void ShutDown(void)
 
 void QuitGame(void)
 {
+#ifdef __amigaos__
+	MU_StopSong(); // as CP_Quit() does here: after
+	// Mix_FadeOutMusic() the program hangs in exit() (SDL2_mixer.module)
+#else
 	MU_FadeOut(200);
 	while (MU_FadeActive())
 	{
@@ -1501,6 +1522,7 @@ void QuitGame(void)
 		{
 		}
 	}
+#endif
 
 #if (SHAREWARE == 1)
 	Uint16 *endscreen = W_CacheLumpName("SHAREEND", PU_CACHE, CvtNull, 1);
@@ -1508,7 +1530,14 @@ void QuitGame(void)
 	Uint16 *endscreen = W_CacheLumpName("REGEND", PU_CACHE, CvtNull, 1);
 #endif
 
+#ifndef __amigaos__
 	vgatext_main(VL_GetVideoWindow(), endscreen);
+#else
+	// The DOS end text screen stays black through OpenGPU's SDL 2 (a
+	// second streaming texture on the window's renderer) and waits for a
+	// key the player cannot see to press: left out.
+	(void)endscreen;
+#endif
 
 	PrintMapStats();
 	PrintTileStats();

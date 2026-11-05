@@ -364,6 +364,17 @@ static int sdl_key_filter(const SDL_Event *event)
 	int grab_mode = 0;
 	int extended;
 
+#ifdef __amigaos__
+	// Right Amiga+Q quits at once, as in the other Amiga ports (Esc is
+	// the game's own menu, with Quit in it).
+	if ((event->key.keysym.sym == SDLK_q) &&
+		(event->key.state == SDL_PRESSED) &&
+		(event->key.keysym.mod & KMOD_RGUI))
+	{
+		ShutDown(); // writes the config, stops the sound; exit(0)
+	}
+#endif
+
 	if ((event->key.keysym.sym == SDLK_g) &&
 		(event->key.state == SDL_PRESSED) &&
 		(event->key.keysym.mod & KMOD_CTRL))

@@ -113,7 +113,11 @@ int vgatext_main(SDL_Window *window, Uint16 *screen)
 	SDL_FillRect(surface8, NULL, 0);
 
 	// setup display surfaces
+#ifdef __amigaos__
+	format = SDL_PIXELFORMAT_RGB888; // as modexlib.c's texture
+#else
 	format = SDL_GetWindowPixelFormat(window);
+#endif
 	SDL_PixelFormatEnumToMasks(format, &bpp, &rmask, &gmask, &bmask, &amask);
 	windowsurface0 =
 		SDL_CreateRGBSurface(0, 640, 400, bpp, rmask, gmask, bmask, amask);
